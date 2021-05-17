@@ -48,7 +48,7 @@ app.get('/search', (request, response) => {
 app.get('/', (req, res) => res.send('Hello World!'));
 
 app.post('/test', express.json({type: '*/*'}), (req, res) => {
-  if (req.headers.hasOwnProperty('vp6') && req.headers.vp6 == 1)
+  if (req.headers.hasOwnProperty('vp6') && req.headers.vp6 == 12345  )
   {
     console.log(JSON.stringify(req.body));
     let body = req.body;
@@ -69,8 +69,11 @@ app.post('/test', express.json({type: '*/*'}), (req, res) => {
 
 function getData(data)
 {
+  const postData = require('./postData');
+  postData(data);
+  
   console.log('Day la ham nhan data sau khi chạy xong: ');
-  console.log(data);
+  console.log('Done');
 }
 
 //Initialises the express server on the port 30000

@@ -3,7 +3,7 @@ const puppeteer = require('puppeteer');
 
 let arrTest = {
 	'url': 'https://vetz3d.com/shop',
-	// 'url' : 'https://vetz3d.com/shop?startId=60350adbbf2d6309e9d90385',
+	// 'url' : 'https://vetz3d.com/shop?startId=6036571b4dd66d935ec5e512',
 	// config catalog product
 	'waitSelector' : 'div.ShopPage',
 	'productItem' : 'div.ShopPage div.ProductItem',
