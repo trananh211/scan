@@ -20,7 +20,7 @@ app.use(function(req, res, next) {
         'one_page' : 3 // chỉ có 1 trangtoi
     };
     global.gl_scrapData = {
-        'verify_data_url': "http://tai.test/api/list-product", // Url client để verify toàn bộ data trước khi cào
+        'scrap_product_data_url': "http://tai.test/api/list-product", // Url client để verify toàn bộ data trước khi cào
         'send_scrap_data_url': 'http://tai.test/api/list-product' // Url client để lưu toàn bộ data về database 
     };
     next();
@@ -41,22 +41,18 @@ app.get('/', (req, res) => res.send('Hello World!'));
 
 // app.get('/xin-chao-2', (req, res) => res.send('Hello World!'));
 
-/* Gửi data pre scrap về cho client*/
-app.post('/get-list-product', express.json({
+// verify toàn bộ data crawl trước khi đồng ý scrap web
+app.post('/verify-data-scrap', express.json({
     type: '*/*'
 }), (req, res) => {
     if (req.headers.hasOwnProperty(headerVerify.key) && req.headers.vp6 == headerVerify.value) {
+        // console.log(JSON.stringify(req.body, 0, 2));
         let body = req.body;
-        var response = {
-            status: 200,
-            result: 1,
-            message: 'Updated Successfully'
-        }
-        // echo json
-        res.end(JSON.stringify(response));
-        preData(req.body).then(results => {
-            sendData(results);
-        });
+        verifyData(body)
+            .then(results => {
+                res.end(JSON.stringify(results));
+            });
+
     } else {
         res.status(404);
         var result = {
@@ -64,7 +60,7 @@ app.post('/get-list-product', express.json({
             result: 0,
             message: 'Phát hiện ra có người ngoài muốn hack vào hệ thống. Bật chế độ bảo mật cao.'
         };
-        response.json(result);
+        res.json(result);
     }
 });
 
@@ -99,18 +95,22 @@ app.post('/post-data-scrap', express.json({
     }
 });
 
-// verify toàn bộ data crawl trước khi đồng ý scrap web
-app.post('/verify-data-scrap', express.json({
+/* Gửi data pre scrap về cho client*/
+app.post('/get-list-product', express.json({
     type: '*/*'
 }), (req, res) => {
     if (req.headers.hasOwnProperty(headerVerify.key) && req.headers.vp6 == headerVerify.value) {
-        // console.log(JSON.stringify(req.body, 0, 2));
         let body = req.body;
-        verifyData(body)
-            .then(results => {
-                res.end(JSON.stringify(results));
-            });
-
+        var response = {
+            status: 200,
+            result: 1,
+            message: 'Updated Successfully'
+        }
+        // echo json
+        res.end(JSON.stringify(response));
+        preData(req.body).then(results => {
+            sendData(results);
+        });
     } else {
         res.status(404);
         var result = {
@@ -118,7 +118,7 @@ app.post('/verify-data-scrap', express.json({
             result: 0,
             message: 'Phát hiện ra có người ngoài muốn hack vào hệ thống. Bật chế độ bảo mật cao.'
         };
-        res.json(result);
+        response.json(result);
     }
 });
 
@@ -134,7 +134,7 @@ function getData(data) {
 
 // gửi dữ liệu cào được về cho tool
 function sendData(data) {
-    let url = gl_scrapData.verify_data_url;
+    let url = gl_scrapData.scrap_product_data_url;
     console.log(JSON.stringify(data));
     const postData = require('./postData');
     postData(data, url);
