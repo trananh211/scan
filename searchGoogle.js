@@ -18,14 +18,7 @@ let arrTest = {
 	'typePageLoad' : 1,
 };
 
-// searchGoogle(arrTest).then(results => {
-//                 console.log(results);
-//             });
-
 function searchGoogle(preData) {
-	/*Dinh nghia config*/
-	var gl_PageLoad_Button = 1;
-	var gl_PageLoad_Scroll = 2;
 
 	/* Chuan bi lai du lieu truoc khi kiem tra website de scrap*/
 	const url = preData.url;
@@ -46,7 +39,7 @@ function searchGoogle(preData) {
 	        await page.goto(url, { waitUntil: 'networkidle2' });
 
 	        // Nếu trang thuộc dạng Load Scroll thì cuộn đến hết data thì thôi.
-	        if (typePageLoad == gl_PageLoad_Scroll)
+	        if (typePageLoad == gl_PageLoad.scroll || typePageLoad == gl_PageLoad.one_page)
 	        {
 	        	// Scroll and extract items from the page.
   				await autoScroll(page);	
@@ -56,7 +49,7 @@ function searchGoogle(preData) {
 	        // truy vấn từng trang 1 cho đến khi hết trang
 	        do {
 	        	// kiểm tra button next đầu tiên để thoat khỏi vòng lặp
-			  	if (typePageLoad == gl_PageLoad_Button) {	
+			  	if (typePageLoad == gl_PageLoad.button) {	
 		        	// kiểm tra tồn tại của button next.
 		        	let checkBtnNextExist = await page.evaluate((btnNext) => {
 					  	let el = document.querySelector(btnNext)
@@ -112,6 +105,7 @@ function searchGoogle(preData) {
 		        };
                	// kiểm tra last page
 	        	lastPage = await checkLastPage(page, lastPage, configPage, timeLoadPage);
+	        	console.log(lastPage);
 	        	
 			} while (lastPage == false); // điều kiện là vẫn còn trang để next, last page = false
             
@@ -154,9 +148,10 @@ async function checkLastPage(page, lastPage, config, time)
 
 	// kiểm tra xem tồn tại button next không
 	const lastPageExist = await page.evaluate( (btnNext) => {
-		const result = document.querySelector(btnNext);
-		return result ? true : false ;
-	},btnNext);
+		const checkExist = document.querySelector(btnNext);
+		const el = document.querySelector(btnNext).clientHeight;
+		return (checkExist && el != 0) ? true : false;
+	}, btnNext);
 	// nếu tồn tại button next => tiếp tục click next trang
 	if (lastPageExist) {
 		// chuyển toàn bộ ký tự class của page vào thành chuỗi của mảng. Nút next sẽ là phần tử cuối cùng trong mảng
@@ -180,11 +175,16 @@ async function checkLastPage(page, lastPage, config, time)
     		} catch (e) {
     			lastPage = true;
     		}	
-		}
+		}	
 	} else { // nếu không tồn tại button next => trang cuối cùng 
 		lastPage = true;
 	}
-	return lastPage;
+	return lastPageExist;
+}
+
+async function isVisible(selector) {
+  let el = document.querySelector(selector).clientHeight;
+  return (el != 0) ? true : false;
 }
 
 function getTimeLoading (min = null, max = null)

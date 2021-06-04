@@ -1,42 +1,53 @@
-const puppeteer = require("puppeteer");
-
+const server = require('./server');
+const puppeteer = require('puppeteer');
+/*
+  Send Post data to other URL not from this server
+  data: body with data is json
+  url : link to client 
+*/
 async function main(data, url) {
     const browser = await puppeteer.launch({
         args: ["--enable-features=NetworkService", "--no-sandbox"],
         ignoreHTTPSErrors: true
     });
-  const page = await browser.newPage();
 
-  await page.setRequestInterception(true);
+    return false;
 
-  page.once("request", interceptedRequest => {
-      interceptedRequest.continue({
-          method: "POST",
-          postData: JSON.stringify(data),
-          headers: {
-              ...interceptedRequest.headers(),
-              "Content-Type": "application/x-www-form-urlencoded",
-              headerVerify.key : headerVerify.value
-          }
-      });
-  });
+    const page = await browser.newPage();
+    await page.setRequestInterception(true);
+    if (header != null) {
+        page.once("request", interceptedRequest => {
+            interceptedRequest.continue({
+                method: "POST",
+                postData: JSON.stringify(data),
+                'vp6': '12345'
+            });
+        });
+    } else {
+        page.once("request", interceptedRequest => {
+            interceptedRequest.continue({
+                method: "POST",
+                postData: JSON.stringify(data)
+            });
+        });
+    }
 
-  const response = await page.goto(url);
+    const response = await page.goto(url);
 
-  var content = await page.content(); 
+    var content = await page.content();
 
-  let innerText = await page.evaluate(() =>  {
-      return JSON.parse(document.querySelector("body").innerText); 
-  }); 
+    let innerText = await page.evaluate(() => {
+        return JSON.parse(document.querySelector("body").innerText);
+    });
 
-  console.log({
-      url: response.url(),
-      statusCode: response.status()
-  });
+    console.log({
+        url: response.url(),
+        statusCode: response.status()
+    });
 
-  console.log(innerText);
+    console.log(innerText);
 
-  await browser.close();
+    await browser.close();
 }
 
 module.exports = main;
