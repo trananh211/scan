@@ -39,13 +39,20 @@ function searchGoogle(preData) {
 	        await page.goto(url, { waitUntil: 'networkidle2' });
 
 	        // Nếu trang thuộc dạng Load Scroll thì cuộn đến hết data thì thôi.
-	        if (typePageLoad == gl_PageLoad.scroll || typePageLoad == gl_PageLoad.one_page)
+	        if (typePageLoad == gl_PageLoad.scroll)
 	        {
 	        	// Scroll and extract items from the page.
   				await autoScroll(page);	
 	        }
+
 	        let lastPage = false;
 	        let urls = [];
+	        // nếu khai báo là 1 page thì mặc định luôn đây là last page
+	        if (typePageLoad == gl_PageLoad.one_page)
+	        {
+	        	lastPage = true;
+	        }
+	        
 	        // truy vấn từng trang 1 cho đến khi hết trang
 	        do {
 	        	// kiểm tra button next đầu tiên để thoat khỏi vòng lặp
@@ -75,19 +82,21 @@ function searchGoogle(preData) {
 	                	const scrapeTime = Date.now();
 		                const titleElement = item.querySelector(productTitle);
 		                const linkElement = item.querySelector(productLink);
+		                const imgElement = item.querySelector('img');
 		                // const imgElement = item.querySelector('.seb-img-switcher__imgs');
 
 		                // You can combine croppedLink and link, or croppedImg and img to not make two variables if you want.
 		                // But, in my opinion, separate variables are better. 
 		                const title = titleElement ? titleElement.innerText.trim() : null;
 		                const croppedLink = linkElement ? linkElement.getAttribute('href') : null;
+		                const imgLink = imgElement ? imgElement.getAttribute('src') : null;
 		                // const croppedImg = imgElement ? imgElement.getAttribute('data-image') : null;
 
 		                const link = croppedLink ? https_origin+croppedLink : null;
-		                // const img = croppedImg ? `https:${croppedImg}` : null;
+		                const img = imgLink ? https_origin+imgLink : null;
 
 			        	//Add to the return Array
-			        	results.push({title, link, scrapeTime});
+			        	results.push({title, link, img, scrapeTime});
 	                });
 	                return results;
 	            }, productItem, productTitle, productLink, https_origin);

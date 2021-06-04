@@ -50,6 +50,7 @@ app.post('/verify-data-scrap', express.json({
         let body = req.body;
         verifyData(body)
             .then(results => {
+                console.log(results);
                 res.end(JSON.stringify(results));
             });
 
