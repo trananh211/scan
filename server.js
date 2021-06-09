@@ -17,7 +17,7 @@ app.use(function(req, res, next) {
     global.gl_PageLoad = {
         'button': 1, // kiểu page load nút bấm để next trang
         'scroll': 2, // kiểu page load cuộn chuộn để next trang
-        'one_page' : 3 // chỉ có 1 trangtoi
+        'one_page' : 3 // chỉ có 1 trang thoi
     };
     global.gl_scrapData = {
         'scrap_product_data_url': "http://tai.test/api/list-product", // Url client để verify toàn bộ data trước khi cào
@@ -52,8 +52,11 @@ app.post('/verify-data-scrap', express.json({
             .then(results => {
                 console.log(results);
                 res.end(JSON.stringify(results));
+            }).catch(function(err) {
+                var results = err;
+                res.end(JSON.stringify(results));
             });
-
+        // res.end(JSON.stringify(body));
     } else {
         res.status(404);
         var result = {
@@ -83,6 +86,9 @@ app.post('/post-data-scrap', express.json({
         searchGoogle(body)
             .then(results => {
                 getData(results);
+            }).catch(function(err) {
+                var results = err;
+                res.end(JSON.stringify(results));
             });
 
     } else {
@@ -111,7 +117,10 @@ app.post('/get-list-product', express.json({
         res.end(JSON.stringify(response));
         preData(req.body).then(results => {
             sendData(results);
-        });
+        }).catch(function(err) {
+                var results = err;
+                res.end(JSON.stringify(results));
+            });
     } else {
         res.status(404);
         var result = {
