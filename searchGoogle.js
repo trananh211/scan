@@ -33,6 +33,9 @@ function searchGoogle(preData) {
 
 	return new Promise(async (resolve, reject) => {
 		try {
+			let lastPage = false;
+	        let urls = [];
+
             const browser = await puppeteer.launch({headless: false, args: ['--no-sandbox'] });
 	        const page = await browser.newPage();
 	        page.setViewport({width: 1280, height: 720});
@@ -42,11 +45,10 @@ function searchGoogle(preData) {
 	        if (typePageLoad == gl_PageLoad.scroll)
 	        {
 	        	// Scroll and extract items from the page.
-  				await autoScroll(page);	
+  				await autoScroll(page);
+  				lastPage = true;	
 	        }
 
-	        let lastPage = false;
-	        let urls = [];
 	        // nếu khai báo là 1 page thì mặc định luôn đây là last page
 	        if (typePageLoad == gl_PageLoad.one_page)
 	        {
@@ -93,7 +95,7 @@ function searchGoogle(preData) {
 		                // const croppedImg = imgElement ? imgElement.getAttribute('data-image') : null;
 
 		                const link = croppedLink ? https_origin+croppedLink : null;
-		                const img = imgLink ? https_origin+imgLink : null;
+		                const img = imgLink ? imgLink : null;
 
 			        	//Add to the return Array
 			        	results.push({title, link, img, scrapeTime});
@@ -102,19 +104,21 @@ function searchGoogle(preData) {
 	            }, productItem, productTitle, productLink, https_origin);
 
 	            urls = urls.concat(newUrls);
-		        
-		        // chuyển trang
-		        let timeLoadPage = getTimeLoading(1,5); // lấy thời gian random từ 1s -> 5s để load trang
-		        console.log('time load trang la: '+ timeLoadPage);
-		        var configPage = {
-		        	'btnNext' : btnNext,
-		        	'signalParentButton' : preData.signalParentButton,
-		        	'signalAttribute' : preData.signalAttribute,
-		        	'signalClassLastButton' : preData.signalClassLastButton
-		        };
-               	// kiểm tra last page
-	        	lastPage = await checkLastPage(page, lastPage, configPage, timeLoadPage);
-	        	console.log(lastPage);
+		      
+		        if (lastPage == false)
+		        {
+		        	// chuyển trang
+			        let timeLoadPage = getTimeLoading(1,3); // lấy thời gian random từ 1s -> 3s để load trang
+			        console.log('time load trang la: '+ timeLoadPage);
+			        var configPage = {
+			        	'btnNext' : btnNext,
+			        	'signalParentButton' : preData.signalParentButton,
+			        	'signalAttribute' : preData.signalAttribute,
+			        	'signalClassLastButton' : preData.signalClassLastButton
+			        };
+		        	// kiểm tra last page
+	        		lastPage = await checkLastPage(page, lastPage, configPage, timeLoadPage);	
+		        }
 	        	
 			} while (lastPage == false); // điều kiện là vẫn còn trang để next, last page = false
             
@@ -157,9 +161,15 @@ async function checkLastPage(page, lastPage, config, time)
 
 	// kiểm tra xem tồn tại button next không
 	const lastPageExist = await page.evaluate( (btnNext) => {
-		const checkExist = document.querySelector(btnNext);
-		const el = document.querySelector(btnNext).clientHeight;
-		return (checkExist && el != 0) ? true : false;
+		let result = false;
+		try {
+			const checkExist = document.querySelector(btnNext);
+			const el = document.querySelector(btnNext).clientHeight;
+			result = (checkExist && el != 0) ? true : false;
+		} catch (e) {
+			result = false;
+		}
+		return result;
 	}, btnNext);
 	// nếu tồn tại button next => tiếp tục click next trang
 	if (lastPageExist) {
