@@ -12,7 +12,7 @@ const port = 3000;
 app.use(function(req, res, next) {
     global.headerVerify = {
         'key': 'vp6',
-        'value': '12345'
+        'value': 'TFqe6sdLoywJQ1uZZOw2'
     };
     global.gl_PageLoad = {
         'button': 1, // kiểu page load nút bấm để next trang
@@ -73,19 +73,25 @@ app.post('/post-data-scrap', express.json({
     type: '*/*'
 }), (req, res) => {
     if (req.headers.hasOwnProperty(headerVerify.key) && req.headers.vp6 == headerVerify.value) {
-        console.log(JSON.stringify(req.body));
+        console.log('Nhận được data để scrap web.');
         let body = req.body;
         var response = {
             status: 200,
             result: 1,
-            message: 'Updated Successfully'
+            message: 'Updated Successfully',
+            web_scrap_id : req.headers.web_scrap_id
         }
         // echo json
         res.end(JSON.stringify(response));
 
         searchGoogle(body)
             .then(results => {
-                getData(results);
+                const data = {
+                    'vp6' : headerVerify.value,
+                    web_scrap_id : req.headers.web_scrap_id,
+                    'data' : results
+                };
+                getData(data);
             }).catch(function(err) {
                 var results = err;
                 res.end(JSON.stringify(results));
@@ -138,7 +144,7 @@ function getData(data) {
     const postData = require('./postData');
     postData(data, url);
 
-    console.log('Day la ham nhan data sau khi chạy xong: ');
+    console.log('Day la ham nhan data sau khi chạy xong toàn bộ: ');
     console.log('Done');
 }
 

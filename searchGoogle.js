@@ -36,7 +36,7 @@ function searchGoogle(preData) {
 			let lastPage = false;
 	        let urls = [];
 
-            const browser = await puppeteer.launch({headless: false, args: ['--no-sandbox'] });
+            const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox'] });
 	        const page = await browser.newPage();
 	        page.setViewport({width: 1280, height: 720});
 	        await page.goto(url, { waitUntil: 'networkidle2' });

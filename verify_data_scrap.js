@@ -19,7 +19,7 @@ function verifyData(Data) {
 	return new Promise(async (resolve, reject) => {
 		let results = {};
 		try {        
-	        const browser = await puppeteer.launch({headless: false, args: ['--no-sandbox'] });
+	        const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox'] });
 	        const page = await browser.newPage();
 	        page.setViewport({width: 1280, height: 720});
 	        await page.goto(url, { waitUntil: 'networkidle2' });
@@ -163,13 +163,18 @@ async function verifyPreData( page, preData, result)
 
 async function checkExistElement(page, element) {
 	let results = false;
-	try {
-		results = await page.evaluate((element) => {
-					  	let el = document.querySelector(element)
-					  	return el ? true : false
-					}, element);
-	} catch (e) {
-		results = false;
+	if (element == '')
+	{
+		results = true;
+	} else {
+		try {
+			results = await page.evaluate((element) => {
+						  	let el = document.querySelector(element)
+						  	return el ? true : false
+						}, element);
+		} catch (e) {
+			results = false;
+		}
 	}
 	return results;
 }

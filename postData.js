@@ -11,26 +11,14 @@ async function main(data, url) {
         ignoreHTTPSErrors: true
     });
 
-    return false;
-
     const page = await browser.newPage();
     await page.setRequestInterception(true);
-    if (header != null) {
-        page.once("request", interceptedRequest => {
-            interceptedRequest.continue({
-                method: "POST",
-                postData: JSON.stringify(data),
-                'vp6': '12345'
-            });
+    page.once("request", interceptedRequest => {
+        interceptedRequest.continue({
+            method: "POST",
+            postData: JSON.stringify(data)
         });
-    } else {
-        page.once("request", interceptedRequest => {
-            interceptedRequest.continue({
-                method: "POST",
-                postData: JSON.stringify(data)
-            });
-        });
-    }
+    });
 
     const response = await page.goto(url);
 
@@ -39,14 +27,14 @@ async function main(data, url) {
     let innerText = await page.evaluate(() => {
         return JSON.parse(document.querySelector("body").innerText);
     });
-
     console.log({
         url: response.url(),
         statusCode: response.status()
     });
-
     console.log(innerText);
 
+
+    // console.log(content);
     await browser.close();
 }
 
