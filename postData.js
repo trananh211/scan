@@ -5,11 +5,13 @@ const puppeteer = require('puppeteer');
   data: body with data is json
   url : link to client 
 */
-async function main(data, url) {
+async function postData(data, url) {
     const browser = await puppeteer.launch({
         args: ["--enable-features=NetworkService", "--no-sandbox"],
         ignoreHTTPSErrors: true
     });
+
+    // console.log(JSON.stringify(data, 0, 2));
 
     const page = await browser.newPage();
     await page.setRequestInterception(true);
@@ -24,18 +26,18 @@ async function main(data, url) {
 
     var content = await page.content();
 
-    let innerText = await page.evaluate(() => {
-        return JSON.parse(document.querySelector("body").innerText);
-    });
-    console.log({
-        url: response.url(),
-        statusCode: response.status()
-    });
-    console.log(innerText);
+    // let innerText = await page.evaluate(() => {
+    //     return JSON.parse(document.querySelector("body").innerText);
+    // });
+    // console.log({
+    //     url: response.url(),
+    //     statusCode: response.status()
+    // });
+    // console.log(innerText);
 
 
-    // console.log(content);
+    console.log(content);
     await browser.close();
 }
 
-module.exports = main;
+module.exports = postData;
