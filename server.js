@@ -10,6 +10,7 @@ const port = 3000;
 // -------------------------------------------------------------------------------------------------------
 // Định nghĩa biến toàn cục ở đây
 app.use(function(req, res, next) {
+    var url = 'http://tai.test/api';
     global.headerVerify = {
         'key': 'vp6',
         'value': 'TFqe6sdLoywJQ1uZZOw2'
@@ -20,9 +21,9 @@ app.use(function(req, res, next) {
         'one_page' : 3 // chỉ có 1 trang thoi
     };
     global.gl_scrapData = {
-        'scrap_product_data_url': "http://tai.test/api/list-product", // Url client để verify toàn bộ data trước khi cào
-        'send_scrap_data_url': 'http://tai.test/api/list-product', // Url client để lưu toàn bộ data về database
-        'send_product_data_url': 'http://tai.test/api/get-product-data', // Url client để lưu toàn bộ data về database 
+        'scrap_product_data_url': url+"/list-product", // Url client để verify toàn bộ data trước khi cào
+        'send_scrap_data_url': url+'/list-product', // Url client để lưu toàn bộ data về database
+        'send_product_data_url': url+'/get-product-data', // Url client để lưu toàn bộ data về database 
     };
     next();
 });
@@ -48,8 +49,8 @@ app.post('/verify-data-scrap', express.json({
     type: '*/*'
 }), (req, res) => {
     if (req.headers.hasOwnProperty(headerVerify.key) && req.headers.vp6 == headerVerify.value) {
-        // console.log(JSON.stringify(req.body, 0, 2));
         let body = req.body;
+        console.log(JSON.stringify(req.body, 0, 2));
         verifyData(body)
             .then(results => {
                 console.log(results);
@@ -76,6 +77,7 @@ app.post('/post-data-scrap', express.json({
     if (req.headers.hasOwnProperty(headerVerify.key) && req.headers.vp6 == headerVerify.value) {
         console.log('Nhận được data để scrap web.');
         let body = req.body;
+        // console.log(JSON.stringify(req.body, 0, 2));
         var response = {
             status: 200,
             result: 1,
@@ -142,6 +144,7 @@ app.post('/post-data-product', express.json({ type: '*/*' }), (req, res) => {
     if (req.headers.hasOwnProperty(headerVerify.key) && req.headers.vp6 == headerVerify.value) {
         console.log('Nhận được data để scrap product.');
         let body = req.body;
+        // console.log(JSON.stringify(body, 0, 2));
         var response = {
             status: 200,
             result: 1,

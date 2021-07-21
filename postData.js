@@ -11,7 +11,7 @@ async function postData(data, url) {
         ignoreHTTPSErrors: true
     });
 
-    // console.log(JSON.stringify(data, 0, 2));
+    console.log(JSON.stringify(data, 0, 2));
 
     const page = await browser.newPage();
     await page.setRequestInterception(true);
@@ -25,6 +25,7 @@ async function postData(data, url) {
     const response = await page.goto(url);
 
     var content = await page.content();
+    console.log(content);
 
     // let innerText = await page.evaluate(() => {
     //     return JSON.parse(document.querySelector("body").innerText);
@@ -36,7 +37,7 @@ async function postData(data, url) {
     // console.log(innerText);
 
 
-    console.log(content);
+    
     await browser.close();
 }
 

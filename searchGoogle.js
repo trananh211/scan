@@ -1,23 +1,6 @@
 const fs = require('fs');
 const puppeteer = require('puppeteer');
 
-let arrTest = {
-	'url': 'https://vetz3d.com/shop',
-	// 'url' : 'https://vetz3d.com/shop?startId=6036571b4dd66d935ec5e512',
-	// config catalog product
-	'waitSelector' : 'div.ShopPage',
-	'productItem' : 'div.ShopPage div.ProductItem',
-	'productTitle' : 'div.BottomProduct > div.Title',
-	'productLink' : 'a',
-	'https_origin' : 'https://vetz3d.com',
-	// config Page Next
-	'btnNext' : 'button.ml-2', // dấu hiệu nhận biết nút btn next. 
-	'signalParentButton' : '.ShopPagination .d-inline-flex button', // dấu hiệu nhận biết cha của button pagination
-	'signalAttribute' : 'class', // class or Id
-	'signalClassLastButton' : 'buttonDisabled', // dấu hiệu nhận biết là Button cuối cùng
-	'typePageLoad' : 1,
-};
-
 function searchGoogle(preData) {
 
 	/* Chuan bi lai du lieu truoc khi kiem tra website de scrap*/
@@ -25,6 +8,9 @@ function searchGoogle(preData) {
 	const waitSelector = preData.waitSelector;
 	const productItem = preData.productItem;
 	const productTitle = preData.productTitle;
+	const imageSelector = preData.imageSelector;
+	const imageAttribute = preData.imageAttribute;
+	const imageHttps = (preData.imageHttps != '') ? preData.imageHttps : '' ;
 	const productLink = preData.productLink;
 	const https_origin = preData.https_origin;
 	const btnNext = preData.btnNext;
@@ -77,31 +63,42 @@ function searchGoogle(preData) {
 		        	await page.waitForTimeout(3000);
 		        }
 
-	            let newUrls = await page.evaluate((productItem, productTitle, productLink, https_origin) => {
+	            let newUrls = await page.evaluate((productItem, productTitle, productLink, https_origin, imageSelector, 
+					imageAttribute, imageHttps) => {
 	                let results = [];
 	                let items = document.querySelectorAll(productItem);
 	                items.forEach((item) => {
 	                	const scrapeTime = Date.now();
 		                const titleElement = item.querySelector(productTitle);
 		                const linkElement = item.querySelector(productLink);
-		                const imgElement = item.querySelector('img');
+						
 		                // const imgElement = item.querySelector('.seb-img-switcher__imgs');
 
 		                // You can combine croppedLink and link, or croppedImg and img to not make two variables if you want.
 		                // But, in my opinion, separate variables are better. 
 		                const title = titleElement ? titleElement.innerText.trim() : null;
 		                const croppedLink = linkElement ? linkElement.getAttribute('href') : null;
-		                const imgLink = imgElement ? imgElement.getAttribute('src') : null;
-		                // const croppedImg = imgElement ? imgElement.getAttribute('data-image') : null;
+		                
 
 		                const link = croppedLink ? https_origin+croppedLink : null;
-		                const img = imgLink ? imgLink : null;
+		                
+						let imgElement = '';
+						let imgLink = '';
+						// image
+						if (imageSelector == '') {
+							imgElement = item.querySelector('img');
+							imgLink = imgElement ? imgElement.getAttribute('src') : null;
+						} else {
+							imgElement = item.querySelector(imageSelector);
+							imgLink = imgElement ? imgElement.getAttribute(imageAttribute) : null;
+						}
+						const img = imgLink ? imageHttps+imgLink : null;
 
 			        	//Add to the return Array
 			        	results.push({title, link, img, scrapeTime});
 	                });
 	                return results;
-	            }, productItem, productTitle, productLink, https_origin);
+	            }, productItem, productTitle, productLink, https_origin, imageSelector, imageAttribute, imageHttps);
 
 	            urls = urls.concat(newUrls);
 		      
@@ -117,7 +114,7 @@ function searchGoogle(preData) {
 			        	'signalClassLastButton' : preData.signalClassLastButton
 			        };
 		        	// kiểm tra last page
-	        		lastPage = await checkLastPage(page, lastPage, configPage, timeLoadPage);	
+	        		lastPage = await checkLastPage(page, lastPage, configPage, timeLoadPage);
 		        }
 	        	
 			} while (lastPage == false); // điều kiện là vẫn còn trang để next, last page = false
@@ -158,14 +155,16 @@ async function checkLastPage(page, lastPage, config, time)
 	const signalParentButton = config.signalParentButton;
 	const signalAttribute = config.signalAttribute;
 	const signalClassLastButton = config.signalClassLastButton;
-
+	
 	// kiểm tra xem tồn tại button next không
 	const lastPageExist = await page.evaluate( (btnNext) => {
 		let result = false;
 		try {
 			const checkExist = document.querySelector(btnNext);
 			const el = document.querySelector(btnNext).clientHeight;
+			// const el = document.querySelector(btnNext).length;
 			result = (checkExist && el != 0) ? true : false;
+			// result = checkExist;
 		} catch (e) {
 			result = false;
 		}

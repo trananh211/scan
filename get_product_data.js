@@ -13,11 +13,10 @@ function main(preData) {
 
             // lặp toàn bộ data từ client để truy cập vào từng trang product
             for (let item of preData)
-            {
-                // console.log(item);
+            {   
                 let url = item.product_link;
                 await page.goto(url, { waitUntil: 'networkidle2' });
-	            await page.waitForTimeout(1000);
+                await page.waitForTimeout(1000);
                 let data = await getDataProduct(page, item);
                 products.push(data);
             }
@@ -50,8 +49,7 @@ async function getDataProduct(page, data)
         let productTitle = product_source.productTitle;
         let imageSelector = product_source.imageSelector;
         let imageAttribute = product_source.imageAttribute;
-        const scrapeTime = Date.now();
-
+		let https_origin = product_source.https_origin;
         // lấy title 
         const title = await page.evaluate( (productTitle) => {
             let result = null;
@@ -65,26 +63,32 @@ async function getDataProduct(page, data)
         }, productTitle);
 
         // lấy ảnh
-        let images = await page.evaluate((imageSelector, imageAttribute) => {
+        let images = await page.evaluate((imageSelector, imageAttribute, https_origin) => {
             let result = [];
-            let items = document.querySelectorAll(imageSelector);
-            items.forEach((item) => {
-                const scrapeTime = Date.now();
-                const img = item ? item.getAttribute(imageAttribute) : null;
-                
-                //Add to the return Array
-                if (img != null) {
-                    result.push(img);
+                try {
+                    let items = document.querySelectorAll(imageSelector);
+                    items.forEach((item) => {
+                        const imgElement = item ? item.getAttribute(imageAttribute) : null;
+                        const img = imgElement ? https_origin+imgElement : null;
+                        
+                        //Add to the return Array
+                        if (img != null) {
+                            result.push(img);
+                        }
+                    });
+                } catch(e) {
+                    result = [];
                 }
-            });
             return result;
-        }, imageSelector, imageAttribute);
+        }, imageSelector, imageAttribute, https_origin);
 
-        //Add to the return Array
+        // Add to the return Array
         results = {title, images};
         if (title != null && images.length > 0) {
             res = true;
         }
+    } else {
+        console.log('aaa');
     }
 
     // gắn lại vào đuôi của data cũ
