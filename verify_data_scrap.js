@@ -19,12 +19,12 @@ function verifyData(Data) {
 	return new Promise(async (resolve, reject) => {
 		let results = {};
 		try {        
-	        const browser = await puppeteer.launch({headless: false, args: ['--no-sandbox'] });
+	        const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox'] });
 	        const page = await browser.newPage();
 	        page.setViewport({width: 1280, height: 720});
 	        await page.goto(url, { waitUntil: 'networkidle2' });
 	        // mặc định chờ load 2s
-	        await page.waitForTimeout(800);
+	        await page.waitForTimeout(2000);
 
 	        // kiểm tra các dữ liệu từ client gửi lên xem có đúng hay không
 	        const check_data_before = await verifyPreData(page, preData, result);
@@ -42,7 +42,7 @@ function verifyData(Data) {
 	        await browser.close();
 		} catch (e) {
 			result = 0;
-			message = 'Xảy ra lỗi ngoài ý muốn. Không thể truy cập được url bạn khai báo.';
+			message = 'Xảy ra lỗi ngoài ý muốn. Không thể truy cập được url bạn khai báo.' + e;
 	    }
 	    // lấy data về show lại cho client
 	    if (result == 1)
@@ -52,6 +52,10 @@ function verifyData(Data) {
 				'waitSelector' : preData.waitSelector,
 				'productItem' : preData.productItem,
 				'productTitle' : preData.productTitle,
+				'productLink' : preData.productLink,
+				'imageSelector' : preData.imageSelector,
+				'imageAttribute' : preData.imageAttribute,
+				'imageHttps' : preData.imageHttps,
 				'productLink' : preData.productLink,
 				'https_origin' : preData.https_origin,
 				// config Page Next
@@ -163,13 +167,18 @@ async function verifyPreData( page, preData, result)
 
 async function checkExistElement(page, element) {
 	let results = false;
-	try {
-		results = await page.evaluate((element) => {
-					  	let el = document.querySelector(element)
-					  	return el ? true : false
-					}, element);
-	} catch (e) {
-		results = false;
+	if (element == '')
+	{
+		results = true;
+	} else {
+		try {
+			results = await page.evaluate((element) => {
+						  	let el = document.querySelector(element)
+						  	return el ? true : false
+						}, element);
+		} catch (e) {
+			results = false;
+		}
 	}
 	return results;
 }
@@ -252,7 +261,7 @@ async function checkButtonNext(page, config, link_product)
 			
 			if (check_url)
 			{
-				await page.waitForTimeout(500);
+				await page.waitForTimeout(1000);
 				// chuyển toàn bộ ký tự class của page vào thành chuỗi của mảng. Nút next sẽ là phần tử cuối cùng trong mảng
 				const array = await page.evaluate((signalParentButton, signalAttribute) => 
 				  	Array.from (
@@ -291,10 +300,10 @@ async function verifyProductPage(page, dataProduct, link_product) {
 		const productTitle = dataProduct.productTitle;
 		const imageSelector = dataProduct.imageSelector;
 		const imageAttribute = dataProduct.imageAttribute;
-
+		
 		//goto url
 		await page.goto(link_product, { waitUntil: 'networkidle2' });
-	    await page.waitForTimeout(800);
+	    await page.waitForTimeout(2000);
 
 		// begin check
 		const checkProductTitle = await checkExistElement(page, productTitle);

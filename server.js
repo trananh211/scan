@@ -10,9 +10,10 @@ const port = 3000;
 // -------------------------------------------------------------------------------------------------------
 // Định nghĩa biến toàn cục ở đây
 app.use(function(req, res, next) {
+    var url = 'http://tai.test/api';
     global.headerVerify = {
         'key': 'vp6',
-        'value': '12345'
+        'value': 'TFqe6sdLoywJQ1uZZOw2'
     };
     global.gl_PageLoad = {
         'button': 1, // kiểu page load nút bấm để next trang
@@ -20,8 +21,9 @@ app.use(function(req, res, next) {
         'one_page' : 3 // chỉ có 1 trang thoi
     };
     global.gl_scrapData = {
-        'scrap_product_data_url': "http://tai.test/api/list-product", // Url client để verify toàn bộ data trước khi cào
-        'send_scrap_data_url': 'http://tai.test/api/list-product' // Url client để lưu toàn bộ data về database 
+        'scrap_product_data_url': url+"/list-product", // Url client để verify toàn bộ data trước khi cào
+        'send_scrap_data_url': url+'/list-product', // Url client để lưu toàn bộ data về database
+        'send_product_data_url': url+'/get-product-data', // Url client để lưu toàn bộ data về database 
     };
     next();
 });
@@ -32,6 +34,7 @@ app.use(function(req, res, next) {
 const searchGoogle = require('./searchGoogle');
 const preData = require('./process_data');
 const verifyData = require('./verify_data_scrap');
+const getProductData = require('./get_product_data');
 // -------------------------------------------------------------------------------------------------------
 
 // View & templating engine setup
@@ -46,8 +49,8 @@ app.post('/verify-data-scrap', express.json({
     type: '*/*'
 }), (req, res) => {
     if (req.headers.hasOwnProperty(headerVerify.key) && req.headers.vp6 == headerVerify.value) {
-        // console.log(JSON.stringify(req.body, 0, 2));
         let body = req.body;
+        console.log(JSON.stringify(req.body, 0, 2));
         verifyData(body)
             .then(results => {
                 console.log(results);
@@ -58,7 +61,6 @@ app.post('/verify-data-scrap', express.json({
             });
         // res.end(JSON.stringify(body));
     } else {
-        res.status(404);
         var result = {
             status: 'Error',
             result: 0,
@@ -73,26 +75,32 @@ app.post('/post-data-scrap', express.json({
     type: '*/*'
 }), (req, res) => {
     if (req.headers.hasOwnProperty(headerVerify.key) && req.headers.vp6 == headerVerify.value) {
-        console.log(JSON.stringify(req.body));
+        console.log('Nhận được data để scrap web.');
         let body = req.body;
+        // console.log(JSON.stringify(req.body, 0, 2));
         var response = {
             status: 200,
             result: 1,
-            message: 'Updated Successfully'
+            message: 'Updated Successfully',
+            web_scrap_id : req.headers.web_scrap_id
         }
         // echo json
         res.end(JSON.stringify(response));
 
         searchGoogle(body)
             .then(results => {
-                getData(results);
+                const data = {
+                    'vp6' : headerVerify.value,
+                    web_scrap_id : req.headers.web_scrap_id,
+                    'data' : results
+                };
+                getData(data);
             }).catch(function(err) {
                 var results = err;
                 res.end(JSON.stringify(results));
             });
 
     } else {
-        res.status(404);
         var result = {
             status: 'Error',
             result: 0,
@@ -122,7 +130,6 @@ app.post('/get-list-product', express.json({
                 res.end(JSON.stringify(results));
             });
     } else {
-        res.status(404);
         var result = {
             status: 'Error',
             result: 0,
@@ -132,25 +139,67 @@ app.post('/get-list-product', express.json({
     }
 });
 
+// nhận data product để scrap, xong thì gửi lại về client
+app.post('/post-data-product', express.json({ type: '*/*' }), (req, res) => {
+    if (req.headers.hasOwnProperty(headerVerify.key) && req.headers.vp6 == headerVerify.value) {
+        console.log('Nhận được data để scrap product.');
+        let body = req.body;
+        // console.log(JSON.stringify(body, 0, 2));
+        var response = {
+            status: 200,
+            result: 1,
+            message: 'Updated Successfully',
+            data : body
+        }
+        // echo json
+        res.end(JSON.stringify(response));
+
+        getProductData(body)
+            .then(results => {
+                const data = {
+                    'vp6' : headerVerify.value,
+                    'data' : results
+                };
+                sendProductData(data);
+            }).catch(function(err) {
+                var results = err;
+                res.end(JSON.stringify(results));
+            });
+
+    } else {
+        console.log('Không đúng API key');
+        var result = {
+            status: 'error',
+            result: 0,
+            message: 'Phát hiện ra có người ngoài muốn hack vào hệ thống. Bật chế độ bảo mật cao.'
+        };
+        res.end(JSON.stringify(result));
+        // res.json(result);
+    }
+});
+
 // gửi toàn bộ danh sách product cào được về client để lưu vào data base
 function getData(data) {
     let url = gl_scrapData.send_scrap_data_url;
     const postData = require('./postData');
     postData(data, url);
 
-    console.log('Day la ham nhan data sau khi chạy xong: ');
+    console.log('Day la ham nhan data sau khi chạy xong toàn bộ: ');
     console.log('Done');
 }
 
 // gửi dữ liệu cào được về cho tool
 function sendData(data) {
     let url = gl_scrapData.scrap_product_data_url;
-    console.log(JSON.stringify(data));
     const postData = require('./postData');
     postData(data, url);
+}
 
-    console.log('Day la ham send data sau khi chạy xong: ');
-    console.log('Done');
+// gửi dữ liệu product về cho client
+function sendProductData(data){
+    let url = gl_scrapData.send_product_data_url;
+    const postData = require('./postData');
+    postData(data, url);
 }
 
 //Initialises the express server on the port 30000
