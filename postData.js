@@ -11,7 +11,7 @@ async function postData(data, url) {
         ignoreHTTPSErrors: true
     });
 
-    console.log(JSON.stringify(data, 0, 2));
+    // console.log(JSON.stringify(data, 0, 2));
 
     const page = await browser.newPage();
     await page.setRequestInterception(true);

@@ -15,11 +15,13 @@ function main(preData) {
             for (let item of preData)
             {   
                 let url = item.product_link;
+                console.log('Đang scrap product link : '+ url);
                 await page.goto(url, { waitUntil: 'networkidle2' });
                 await page.waitForTimeout(1000);
                 let data = await getDataProduct(page, item);
                 products.push(data);
             }
+            console.log('Đã duyệt xong toàn bộ product link. Đóng trình duyệt.');
             await browser.close();
             results = {
 	        	'result' : 1,
