@@ -60,7 +60,7 @@ function verifyData(Data) {
 				'https_origin' : preData.https_origin,
 				// config Page Next
 				'btnNext' : preData.btnNext, 
-				'signalParentButton' : preData.signalParentButton, // dấu hiệu nhận biết cha của button pagination
+				'signalLastButtonNoClass' : preData.signalLastButtonNoClass, // dấu hiệu nhận biết cha của button pagination
 				'signalAttribute' : preData.signalAttribute, // class or Id
 				'signalClassLastButton' : preData.signalClassLastButton, // dấu hiệu nhận biết là Button cuối cùng
 				'typePageLoad' : gl_PageLoad.one_page
@@ -93,7 +93,7 @@ async function verifyPreData( page, preData, result)
 	const productLink = preData.productLink;
 	const https_origin = preData.https_origin;
 	const btnNext = preData.btnNext;
-	const signalParentButton = preData.signalParentButton;
+	const signalLastButtonNoClass = preData.signalLastButtonNoClass;
 	const signalAttribute = preData.signalAttribute;
 	const signalClassLastButton = preData.signalClassLastButton;
 	const typePageLoad = preData.typePageLoad;
@@ -118,7 +118,7 @@ async function verifyPreData( page, preData, result)
         				let dataPageLoad = {
 	        				'typePageLoad' : typePageLoad,
 	        				'btnNext' : btnNext,
-	        				'signalParentButton' : signalParentButton,
+	        				'signalLastButtonNoClass' : signalLastButtonNoClass,
 	        				'signalAttribute' : signalAttribute,
 	        				'signalClassLastButton' : signalClassLastButton,
 	        				'url_end' : url_end
@@ -211,7 +211,7 @@ async function checkButtonNext(page, config, link_product)
 	let message = 'Kiểm tra Dữ liệu ngoài Category => ';
 	//config data
 	const btnNext = config.btnNext;
-	const signalParentButton = config.signalParentButton;
+	const signalLastButtonNoClass = config.signalLastButtonNoClass;
 	const signalAttribute = config.signalAttribute;
 	const signalClassLastButton = config.signalClassLastButton;
 	const url_end = config.url_end;
@@ -233,19 +233,19 @@ async function checkButtonNext(page, config, link_product)
 		let checkParentButton = false;
 		try {
 			// chuyển toàn bộ ký tự class của page vào thành chuỗi của mảng. Nút next sẽ là phần tử cuối cùng trong mảng
-			const array = await page.evaluate((signalParentButton, signalAttribute) => 
+			const array = await page.evaluate((signalLastButtonNoClass, signalAttribute) => 
 			  	Array.from (
-			  		document.querySelectorAll(signalParentButton)).map(d => d.getAttribute(signalAttribute)
-			  		), signalParentButton, signalAttribute
+			  		document.querySelectorAll(signalLastButtonNoClass)).map(d => d.getAttribute(signalAttribute)
+			  		), signalLastButtonNoClass, signalAttribute
 			);
 			if (array.length > 0)
 			{
 				checkParentButton = true;
 			} else {
-				message += 'Biến thứ 8 và 9 : "signalParentButton" & "signalAttribute" không hợp lệ. Mời bạn kiểm tra lại';
+				message += 'Biến thứ 8 và 9 : "signalLastButtonNoClass" & "signalAttribute" không hợp lệ. Mời bạn kiểm tra lại';
 			}
 		} catch (e) {
-			message += 'Biến thứ 8 và 9 : "signalParentButton" & "signalAttribute" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
+			message += 'Biến thứ 8 và 9 : "signalLastButtonNoClass" & "signalAttribute" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
 		}
 		// nếu tồn tại nút bấm thì thử bấm nút
 		if (checkParentButton)
@@ -263,10 +263,10 @@ async function checkButtonNext(page, config, link_product)
 			{
 				await page.waitForTimeout(1000);
 				// chuyển toàn bộ ký tự class của page vào thành chuỗi của mảng. Nút next sẽ là phần tử cuối cùng trong mảng
-				const array = await page.evaluate((signalParentButton, signalAttribute) => 
+				const array = await page.evaluate((signalLastButtonNoClass, signalAttribute) => 
 				  	Array.from (
-				  		document.querySelectorAll(signalParentButton)).map(d => d.getAttribute(signalAttribute)
-				  		), signalParentButton, signalAttribute
+				  		document.querySelectorAll(signalLastButtonNoClass)).map(d => d.getAttribute(signalAttribute)
+				  		), signalLastButtonNoClass, signalAttribute
 				);
 
 				// lấy nút cuối cùng trong mảng ra để so sánh

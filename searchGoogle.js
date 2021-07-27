@@ -41,17 +41,10 @@ function searchGoogle(preData) {
 	        	lastPage = true;
 	        }
 	        
+			let i=1;
 	        // truy vấn từng trang 1 cho đến khi hết trang
 	        do {
-	        	// kiểm tra button next đầu tiên để thoat khỏi vòng lặp
-			  	if (typePageLoad == gl_PageLoad.button) {	
-		        	// kiểm tra tồn tại của button next.
-		        	let checkBtnNextExist = await page.evaluate((btnNext) => {
-					  	let el = document.querySelector(btnNext)
-					  	return el ? true : false
-					}, btnNext);
-		        }
-		        // nếu tồn tại wait Selector thi chờ trang load xong mới scrap. Nếu không thì chỉ chờ 3s
+				// nếu tồn tại wait Selector thi chờ trang load xong mới scrap. Nếu không thì chỉ chờ 3s
 		        if (waitSelector.length > 0)
 		        {	
 		        	try {
@@ -78,8 +71,6 @@ function searchGoogle(preData) {
 		                // But, in my opinion, separate variables are better. 
 		                const title = titleElement ? titleElement.innerText.trim() : null;
 		                const croppedLink = linkElement ? linkElement.getAttribute('href') : null;
-		                
-
 		                const link = croppedLink ? https_origin+croppedLink : null;
 		                
 						let imgElement = '';
@@ -101,22 +92,22 @@ function searchGoogle(preData) {
 	            }, productItem, productTitle, productLink, https_origin, imageSelector, imageAttribute, imageHttps);
 
 	            urls = urls.concat(newUrls);
-		      
+				
 		        if (lastPage == false)
 		        {
 		        	// chuyển trang
 			        let timeLoadPage = getTimeLoading(1,3); // lấy thời gian random từ 1s -> 3s để load trang
-			        console.log('time load trang la: '+ timeLoadPage);
+			        console.log('Page : '+ i +'. Time load trang la: '+ timeLoadPage);
 			        var configPage = {
 			        	'btnNext' : btnNext,
-			        	'signalParentButton' : preData.signalParentButton,
+			        	'signalLastButtonNoClass' : preData.signalLastButtonNoClass,
 			        	'signalAttribute' : preData.signalAttribute,
 			        	'signalClassLastButton' : preData.signalClassLastButton
 			        };
 		        	// kiểm tra last page
 	        		lastPage = await checkLastPage(page, lastPage, configPage, timeLoadPage);
 		        }
-	        	
+				i++;
 			} while (lastPage == false); // điều kiện là vẫn còn trang để next, last page = false
             
             // await page.screenshot({path: 'screenshot.png', fullPage: true});
@@ -152,52 +143,55 @@ async function checkLastPage(page, lastPage, config, time)
 {
 	//config data
 	const btnNext = config.btnNext;
-	const signalParentButton = config.signalParentButton;
+	const signalLastButtonNoClass = config.signalLastButtonNoClass;
 	const signalAttribute = config.signalAttribute;
 	const signalClassLastButton = config.signalClassLastButton;
-	
+
 	// kiểm tra xem tồn tại button next không
-	const lastPageExist = await page.evaluate( (btnNext) => {
+	const btnNextExist = await page.evaluate( (btnNext) => {
 		let result = false;
 		try {
 			const checkExist = document.querySelector(btnNext);
 			const el = document.querySelector(btnNext).clientHeight;
-			// const el = document.querySelector(btnNext).length;
 			result = (checkExist && el != 0) ? true : false;
-			// result = checkExist;
 		} catch (e) {
 			result = false;
 		}
 		return result;
 	}, btnNext);
 	// nếu tồn tại button next => tiếp tục click next trang
-	if (lastPageExist) {
+	if (btnNextExist) {
 		// chuyển toàn bộ ký tự class của page vào thành chuỗi của mảng. Nút next sẽ là phần tử cuối cùng trong mảng
-		const array = await page.evaluate((signalParentButton, signalAttribute) => 
+		const array = await page.evaluate((signalLastButtonNoClass, signalAttribute) => 
 		  	Array.from (
-		  		document.querySelectorAll(signalParentButton)).map(d => d.getAttribute(signalAttribute)
-		  		), signalParentButton, signalAttribute
+		  		document.querySelectorAll(signalLastButtonNoClass)).map(d => d.getAttribute(signalAttribute)
+		  		), signalLastButtonNoClass, signalAttribute
 		)
-		// lấy nút cuối cùng trong mảng ra để so sánh
-		const lastItem = array[array.length - 1];
-		// nếu tồn tại ký hiệu trang cuối cùng
-		if ( lastItem.indexOf(signalClassLastButton) !== -1) {
-			lastPage = true;
+		if (array.length > 0) {
+			// lấy nút cuối cùng trong mảng ra để so sánh
+			const lastItem = array[array.length - 1];
+			// nếu tồn tại ký hiệu trang cuối cùng
+			if ( lastItem.indexOf(signalClassLastButton) !== -1) {
+				lastPage = true;
+			} else {
+				try {
+					// Mặc định sẽ Click vào nút cuối cùng mà tool tìm thấy
+					await Promise.all([
+						await page.click(btnNext+':nth-last-child(1)'),
+						await page.waitForTimeout(time)
+					])
+				} catch (e) {
+					lastPage = true;
+				}	
+			}
 		} else {
-			try {
-				// Mặc định sẽ Click vào nút cuối cùng mà tool tìm thấy
-    			await Promise.all([
-                    await page.click(btnNext+':nth-last-child(1)'),
-                    await page.waitForTimeout(time)
-                ])
-    		} catch (e) {
-    			lastPage = true;
-    		}	
-		}	
+			lastPage = true;
+		}
+			
 	} else { // nếu không tồn tại button next => trang cuối cùng 
 		lastPage = true;
 	}
-	return lastPageExist;
+	return lastPage;
 }
 
 async function isVisible(selector) {
