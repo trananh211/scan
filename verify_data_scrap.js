@@ -8,7 +8,7 @@ function verifyData(Data) {
 	const preData = Data.catalog_source;
 	const preDataProduct = Data.product_source;
 	
-	// console.log(JSON.stringify(preData,0,2));
+	console.log(JSON.stringify(preData,0,2));
 	// console.log(JSON.stringify(preDataProduct,0,2));
 
 	/* Chuan bi lai du lieu truoc khi kiem tra website de scrap*/
@@ -132,13 +132,13 @@ async function verifyPreData( page, preData, result)
         				result = 1;
         			}
         		} else {
-        			message += 'Biến thứ 5 : " productLink" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
+        			message += 'Biến thứ 8 : " productLink" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
         		}
     		} else {
-    			message += 'Biến thứ 4 : " checkProductTitle" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
+    			message += 'Biến thứ 4 : " ProductTitle" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
     		}
     	} else {
-    		message += 'Biến thứ 3 : " checkProductItem" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
+    		message += 'Biến thứ 3 : " ProductItem" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
     	}
     } else {
     	message += 'Biến thứ 2 : " waitSelector" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
@@ -242,10 +242,10 @@ async function checkButtonNext(page, config, link_product)
 			{
 				checkParentButton = true;
 			} else {
-				message += 'Biến thứ 8 và 9 : "signalLastButtonNoClass" & "signalAttribute" không hợp lệ. Mời bạn kiểm tra lại';
+				message += 'Biến thứ 11 và 12 : "signalLastButtonNoClass" & "signalAttribute" không hợp lệ. Mời bạn kiểm tra lại';
 			}
 		} catch (e) {
-			message += 'Biến thứ 8 và 9 : "signalLastButtonNoClass" & "signalAttribute" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
+			message += 'Biến thứ 11 và 12 : "signalLastButtonNoClass" & "signalAttribute" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
 		}
 		// nếu tồn tại nút bấm thì thử bấm nút
 		if (checkParentButton)
@@ -256,7 +256,7 @@ async function checkButtonNext(page, config, link_product)
 				await page.goto(url_end, { waitUntil: 'networkidle2' });
 				check_url = true;
 			} catch (e) {
-				message += 'Biến thứ 11 : "url_end" không thể truy cập đường link này. Mời bạn kiểm tra lại';
+				message += 'Biến thứ 13 : "url_end" không thể truy cập đường link này. Mời bạn kiểm tra lại';
 			}
 			
 			if (check_url)
@@ -276,13 +276,13 @@ async function checkButtonNext(page, config, link_product)
 					result = true;
 					message = 'Toàn bộ thông tin khai báo đều đúng. Hệ thống sẽ lưu lại và scrap product sớm. Nhớ để ý thông báo nhé.';
 				} else {
-					message += 'Biến thứ 10 : "signalClassLastButton" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
+					message += 'Biến thứ 11 : "signalClassLastButton" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
 				}
 			}
 		}
 		
 	} else { // nếu không tồn tại button next => trang cuối cùng 
-		message += 'Biến thứ 7 : " btnNext" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
+		message += 'Biến thứ 10 : " btnNext" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
 	}
 	const results = {
 		'result' : result,
