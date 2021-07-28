@@ -8,7 +8,7 @@ function verifyData(Data) {
 	const preData = Data.catalog_source;
 	const preDataProduct = Data.product_source;
 	
-	// console.log(JSON.stringify(preData,0,2));
+	console.log(JSON.stringify(preData,0,2));
 	// console.log(JSON.stringify(preDataProduct,0,2));
 
 	/* Chuan bi lai du lieu truoc khi kiem tra website de scrap*/
@@ -60,7 +60,7 @@ function verifyData(Data) {
 				'https_origin' : preData.https_origin,
 				// config Page Next
 				'btnNext' : preData.btnNext, 
-				'signalParentButton' : preData.signalParentButton, // dấu hiệu nhận biết cha của button pagination
+				'signalLastButtonNoClass' : preData.signalLastButtonNoClass, // dấu hiệu nhận biết cha của button pagination
 				'signalAttribute' : preData.signalAttribute, // class or Id
 				'signalClassLastButton' : preData.signalClassLastButton, // dấu hiệu nhận biết là Button cuối cùng
 				'typePageLoad' : gl_PageLoad.one_page
@@ -93,7 +93,7 @@ async function verifyPreData( page, preData, result)
 	const productLink = preData.productLink;
 	const https_origin = preData.https_origin;
 	const btnNext = preData.btnNext;
-	const signalParentButton = preData.signalParentButton;
+	const signalLastButtonNoClass = preData.signalLastButtonNoClass;
 	const signalAttribute = preData.signalAttribute;
 	const signalClassLastButton = preData.signalClassLastButton;
 	const typePageLoad = preData.typePageLoad;
@@ -118,7 +118,7 @@ async function verifyPreData( page, preData, result)
         				let dataPageLoad = {
 	        				'typePageLoad' : typePageLoad,
 	        				'btnNext' : btnNext,
-	        				'signalParentButton' : signalParentButton,
+	        				'signalLastButtonNoClass' : signalLastButtonNoClass,
 	        				'signalAttribute' : signalAttribute,
 	        				'signalClassLastButton' : signalClassLastButton,
 	        				'url_end' : url_end
@@ -132,13 +132,13 @@ async function verifyPreData( page, preData, result)
         				result = 1;
         			}
         		} else {
-        			message += 'Biến thứ 5 : " productLink" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
+        			message += 'Biến thứ 8 : " productLink" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
         		}
     		} else {
-    			message += 'Biến thứ 4 : " checkProductTitle" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
+    			message += 'Biến thứ 4 : " ProductTitle" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
     		}
     	} else {
-    		message += 'Biến thứ 3 : " checkProductItem" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
+    		message += 'Biến thứ 3 : " ProductItem" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
     	}
     } else {
     	message += 'Biến thứ 2 : " waitSelector" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
@@ -211,7 +211,7 @@ async function checkButtonNext(page, config, link_product)
 	let message = 'Kiểm tra Dữ liệu ngoài Category => ';
 	//config data
 	const btnNext = config.btnNext;
-	const signalParentButton = config.signalParentButton;
+	const signalLastButtonNoClass = config.signalLastButtonNoClass;
 	const signalAttribute = config.signalAttribute;
 	const signalClassLastButton = config.signalClassLastButton;
 	const url_end = config.url_end;
@@ -233,19 +233,19 @@ async function checkButtonNext(page, config, link_product)
 		let checkParentButton = false;
 		try {
 			// chuyển toàn bộ ký tự class của page vào thành chuỗi của mảng. Nút next sẽ là phần tử cuối cùng trong mảng
-			const array = await page.evaluate((signalParentButton, signalAttribute) => 
+			const array = await page.evaluate((signalLastButtonNoClass, signalAttribute) => 
 			  	Array.from (
-			  		document.querySelectorAll(signalParentButton)).map(d => d.getAttribute(signalAttribute)
-			  		), signalParentButton, signalAttribute
+			  		document.querySelectorAll(signalLastButtonNoClass)).map(d => d.getAttribute(signalAttribute)
+			  		), signalLastButtonNoClass, signalAttribute
 			);
 			if (array.length > 0)
 			{
 				checkParentButton = true;
 			} else {
-				message += 'Biến thứ 8 và 9 : "signalParentButton" & "signalAttribute" không hợp lệ. Mời bạn kiểm tra lại';
+				message += 'Biến thứ 11 và 12 : "signalLastButtonNoClass" & "signalAttribute" không hợp lệ. Mời bạn kiểm tra lại';
 			}
 		} catch (e) {
-			message += 'Biến thứ 8 và 9 : "signalParentButton" & "signalAttribute" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
+			message += 'Biến thứ 11 và 12 : "signalLastButtonNoClass" & "signalAttribute" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
 		}
 		// nếu tồn tại nút bấm thì thử bấm nút
 		if (checkParentButton)
@@ -256,17 +256,17 @@ async function checkButtonNext(page, config, link_product)
 				await page.goto(url_end, { waitUntil: 'networkidle2' });
 				check_url = true;
 			} catch (e) {
-				message += 'Biến thứ 11 : "url_end" không thể truy cập đường link này. Mời bạn kiểm tra lại';
+				message += 'Biến thứ 13 : "url_end" không thể truy cập đường link này. Mời bạn kiểm tra lại';
 			}
 			
 			if (check_url)
 			{
 				await page.waitForTimeout(1000);
 				// chuyển toàn bộ ký tự class của page vào thành chuỗi của mảng. Nút next sẽ là phần tử cuối cùng trong mảng
-				const array = await page.evaluate((signalParentButton, signalAttribute) => 
+				const array = await page.evaluate((signalLastButtonNoClass, signalAttribute) => 
 				  	Array.from (
-				  		document.querySelectorAll(signalParentButton)).map(d => d.getAttribute(signalAttribute)
-				  		), signalParentButton, signalAttribute
+				  		document.querySelectorAll(signalLastButtonNoClass)).map(d => d.getAttribute(signalAttribute)
+				  		), signalLastButtonNoClass, signalAttribute
 				);
 
 				// lấy nút cuối cùng trong mảng ra để so sánh
@@ -276,13 +276,13 @@ async function checkButtonNext(page, config, link_product)
 					result = true;
 					message = 'Toàn bộ thông tin khai báo đều đúng. Hệ thống sẽ lưu lại và scrap product sớm. Nhớ để ý thông báo nhé.';
 				} else {
-					message += 'Biến thứ 10 : "signalClassLastButton" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
+					message += 'Biến thứ 11 : "signalClassLastButton" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
 				}
 			}
 		}
 		
 	} else { // nếu không tồn tại button next => trang cuối cùng 
-		message += 'Biến thứ 7 : " btnNext" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
+		message += 'Biến thứ 10 : " btnNext" không thể tìm thấy biến này. Mời bạn kiểm tra lại';
 	}
 	const results = {
 		'result' : result,

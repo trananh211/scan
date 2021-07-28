@@ -50,13 +50,14 @@ app.post('/verify-data-scrap', express.json({
 }), (req, res) => {
     if (req.headers.hasOwnProperty(headerVerify.key) && req.headers.vp6 == headerVerify.value) {
         let body = req.body;
-        console.log(JSON.stringify(req.body, 0, 2));
+        // console.log(JSON.stringify(req.body, 0, 2));
         verifyData(body)
             .then(results => {
                 console.log(results);
                 res.end(JSON.stringify(results));
             }).catch(function(err) {
                 var results = err;
+                console.log(err)
                 res.end(JSON.stringify(results));
             });
         // res.end(JSON.stringify(body));
