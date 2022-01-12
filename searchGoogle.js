@@ -84,20 +84,21 @@ function searchGoogle(preData) {
 							imgLink = imgElement ? imgElement.getAttribute(imageAttribute) : null;
 						}
 						const img = imgLink ? imageHttps+imgLink : null;
-
 			        	//Add to the return Array
-			        	results.push({title, link, img, scrapeTime});
+			        	results = results.concat({title, link, img, scrapeTime});
 	                });
 	                return results;
 	            }, productItem, productTitle, productLink, https_origin, imageSelector, imageAttribute, imageHttps);
 
+	            // console.log(JSON.stringify(newUrls,0,2));
 	            urls = urls.concat(newUrls);
 				
 		        if (lastPage == false)
 		        {
+		        	var now = new Date();
 		        	// chuyển trang
-			        let timeLoadPage = getTimeLoading(1,3); // lấy thời gian random từ 1s -> 3s để load trang
-			        console.log('Page : '+ i +'. Time load trang la: '+ timeLoadPage);
+			        let timeLoadPage = getTimeLoading(3,6); // lấy thời gian random từ 3s -> 5s để load trang
+			        console.log(now.toUTCString()+' ==> Page : '+ i +'. Time load trang la: '+ timeLoadPage);
 			        var configPage = {
 			        	'btnNext' : btnNext,
 			        	'signalLastButtonNoClass' : preData.signalLastButtonNoClass,
